@@ -1,0 +1,26 @@
+{
+  "name": "Pawan Mahesh — Full-Stack Developer",
+  "short_name": "Portfolio",
+  "description": "Full-stack developer portfolio — PERN stack (PostgreSQL, Express, React, Node.js)",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#08080f",
+  "theme_color": "#6366f1",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["portfolio", "developer", "business"],
+  "lang": "en"
+}

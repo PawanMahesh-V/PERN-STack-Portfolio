@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Primary SEO -->
+    <title>Pawan Mahesh — Full-Stack Developer Portfolio</title>
+    <meta name="description" content="Pawan Mahesh is a full-stack developer specialising in PERN stack (PostgreSQL, Express, React, Node.js). Explore projects, experience, and skills." />
+    <meta name="keywords" content="Pawan Mahesh, full-stack developer, PERN stack, React, Node.js, PostgreSQL, portfolio, web developer Pakistan" />
+    <meta name="author" content="Pawan Mahesh" />
+    <meta name="robots" content="index, follow" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type"        content="website" />
+    <meta property="og:url"         content="https://pawanmahesh.dev/" />
+    <meta property="og:title"       content="Pawan Mahesh — Full-Stack Developer" />
+    <meta property="og:description" content="Full-stack developer specialising in PERN stack. Explore my projects, skills, and experience." />
+    <meta property="og:image"       content="/api/assets/avatar" />
+    <meta property="og:image:alt"   content="Pawan Mahesh profile photo" />
+    <meta property="og:locale"      content="en_US" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card"        content="summary_large_image" />
+    <meta name="twitter:title"       content="Pawan Mahesh — Full-Stack Developer" />
+    <meta name="twitter:description" content="Full-stack developer specialising in PERN stack. Explore my projects, skills, and experience." />
+    <meta name="twitter:image"       content="/api/assets/avatar" />
+
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#6366f1" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Portfolio" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+
+    <!-- Register service worker for PWA -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.getRegistrations().then(registrations => {
+            for (let r of registrations) {
+              r.unregister();
+              console.log('🗑️ SW unregistered to clear cache');
+            }
+          });
+        });
+      }
+    </script>
+  </body>
+</html>
