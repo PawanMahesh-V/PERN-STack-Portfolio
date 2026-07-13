@@ -80,9 +80,22 @@ function AnimatedRoutes() {
   );
 }
 
+import { useState } from 'react';
+import IntroScreen from '../components/layout/IntroScreen';
+
 export default function AppRouter() {
+  // Temporarily set to always true so you can see it on every refresh
+  const [showIntro, setShowIntro] = useState(true);
+
   return (
     <BrowserRouter>
+      {showIntro && (
+        <IntroScreen 
+          onComplete={() => {
+            setShowIntro(false);
+          }} 
+        />
+      )}
       <RouteTracker />
       <AnimatedRoutes />
     </BrowserRouter>
