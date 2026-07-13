@@ -1,8 +1,15 @@
 import { createContext, useContext, useState, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const ToastContext = createContext(null);
 
 let toastId = 0;
+
+const ICONS = {
+  success: '✓',
+  error:   '✕',
+  info:    'ℹ',
+};
 
 export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([]);
@@ -13,18 +20,24 @@ export function ToastProvider({ children }) {
     setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), duration);
   }, []);
 
-  const icons = { success: '✓', error: '✕', info: 'ℹ' };
-
   return (
     <ToastContext.Provider value={{ addToast }}>
       {children}
       <div className="toast-container" role="alert" aria-live="polite">
-        {toasts.map(t => (
-          <div key={t.id} className={`toast ${t.type}`}>
-            <span style={{ fontSize: '1rem' }}>{icons[t.type] ?? icons.info}</span>
-            <span>{t.message}</span>
-          </div>
-        ))}
+        <AnimatePresence>
+          {toasts.map(t => (
+            <motion.div
+              key={t.id}
+              className={`toast toast-${t.type}`}
+              initial={{ opacity: 0, x: 80, scale: 0.85 }}
+              animate={{ opacity: 1, x: 0,  scale: 1    }}
+              exit={{ opacity: 0, x: 80, scale: 0.85    }}
+              transition={{ type: 'spring', stiffness: 300, damping: 24 }}>
+              <div className="toast-icon">{ICONS[t.type] ?? ICONS.info}</div>
+              <span>{t.message}</span>
+            </motion.div>
+          ))}
+        </AnimatePresence>
       </div>
     </ToastContext.Provider>
   );

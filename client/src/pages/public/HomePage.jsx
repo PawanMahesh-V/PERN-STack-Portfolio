@@ -37,19 +37,17 @@ export default function HomePage() {
   }, []);
 
   if (loading) return (
-    <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-base)' }}>
-      <div className="spinner spinner-lg" />
+    <div className="page-loading">
+      <div className="loader" />
     </div>
   );
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.5, ease: [0.25, 1, 0.5, 1] }}
-      style={{ background: 'var(--bg-base)', minHeight: '100vh' }}
-    >
+      transition={{ duration: 0.5, ease: [0.25, 1, 0.5, 1] }}>
       <Navbar settings={settings} />
       <main id="main-content">
         {/* Hero is always rendered — it's driven by global_settings, not a DB section */}

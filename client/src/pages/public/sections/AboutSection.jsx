@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 import { motion, useInView } from 'framer-motion';
-import { StaggerContainer, StaggerItem } from '../../../components/ui/FadeIn';
 
 function CountUp({ target, suffix = '', inView }) {
   const [value, setValue] = useState(0);
@@ -22,80 +21,93 @@ function CountUp({ target, suffix = '', inView }) {
   return <>{value}{suffix}</>;
 }
 
+/* ── 3D tilt on stat cards ────────────────────────────────── */
+function StatCard({ icon, value, suffix, label, inView, delay }) {
+  const [tilt, setTilt] = useState({ x: 0, y: 0 });
+
+  const handleMove = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left - rect.width  / 2;
+    const y = e.clientY - rect.top  - rect.height / 2;
+    setTilt({ x: -(y / (rect.height / 2)) * 10, y: (x / (rect.width / 2)) * 10 });
+  };
+  const handleLeave = () => setTilt({ x: 0, y: 0 });
+
+  return (
+    <motion.div
+      className="stat-card"
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.5, delay }}
+      onMouseMove={handleMove}
+      onMouseLeave={handleLeave}
+      style={{
+        transform: `perspective(600px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
+        transition: 'transform 0.15s ease, box-shadow 0.25s ease, border-color 0.25s ease',
+      }}>
+      <div className="stat-icon">
+        <Icon icon={icon} />
+      </div>
+      <p className="stat-value">
+        <CountUp target={value} suffix={suffix} inView={inView} />
+      </p>
+      <p className="stat-label">{label}</p>
+    </motion.div>
+  );
+}
+
 export default function AboutSection({ section, settings }) {
-  const ref = useRef(null);
+  const ref    = useRef(null);
   const inView = useInView(ref, { once: true, margin: '-10%' });
-  
+
   const aboutText = settings?.about_text || section?.content?.text || '';
-  const isHtml = aboutText.startsWith('<');
+  const isHtml    = aboutText.startsWith('<');
 
   const STATS = [
-    { icon: 'code',        value: 3,   suffix: '+', label: 'Years Experience'      },
-    { icon: 'folder-open', value: 10,  suffix: '+', label: 'Projects Built'        },
-    { icon: 'certificate', value: 5,   suffix: '+', label: 'Certifications'        },
-    { icon: 'handshake',   value: 100, suffix: '%', label: 'Client Satisfaction'   },
+    { icon: 'code',        value: 3,   suffix: '+', label: 'Years Experience'    },
+    { icon: 'folder-open', value: 10,  suffix: '+', label: 'Projects Built'      },
+    { icon: 'certificate', value: 5,   suffix: '+', label: 'Certifications'      },
+    { icon: 'handshake',   value: 100, suffix: '%', label: 'Client Satisfaction' },
   ];
 
   return (
-    <section id="about" className="section-pad" aria-labelledby="about-title" ref={ref}>
+    <section id="about" className="section" aria-labelledby="about-title" ref={ref}>
       <div className="container">
-        <div style={styles.inner}>
+        <div className="about-grid">
           {/* Left — text */}
-          <StaggerContainer delayChildren={0.1}>
-            <StaggerItem>
+          <motion.div
+            className="about-text-content"
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}>
+
+            <div className="section-header" style={{ textAlign: 'left', marginBottom: 0 }}>
               <span className="section-label">
-                <Icon icon="user" style={{ marginRight: '0.4rem' }} />Get to know me
+                <Icon icon="user" /> Get to know me
               </span>
-            </StaggerItem>
-            <StaggerItem>
-              <h2 id="about-title" className="section-title">{section.title}</h2>
-            </StaggerItem>
-            <StaggerItem>
-              <div className="section-divider" />
-            </StaggerItem>
+              <h2 id="about-title" style={{ marginTop: '1rem' }}>{section.title}</h2>
+              <div className="section-divider" style={{ marginLeft: 0 }} />
+            </div>
 
-            <StaggerItem>
+            <div className="about-prose">
               {isHtml ? (
-                <div className="rich-text" dangerouslySetInnerHTML={{ __html: aboutText }} />
+                <div dangerouslySetInnerHTML={{ __html: aboutText }} />
               ) : (
-                <p style={{ color: 'var(--text-secondary)', lineHeight: 1.9, fontSize: '1.05rem' }}>
-                  {aboutText}
-                </p>
+                <p>{aboutText}</p>
               )}
-            </StaggerItem>
-          </StaggerContainer>
+            </div>
+          </motion.div>
 
-          {/* Right — animated stat cards */}
-          <StaggerContainer delayChildren={0.3} style={styles.stats}>
+          {/* Right — stat cards */}
+          <div className="stat-grid">
             {STATS.map((s, i) => (
-              <StaggerItem key={s.label}>
-                <motion.div 
-                  className="glass-card interactive" 
-                  style={styles.statCard}
-                  whileHover={{ scale: 1.05, y: -5 }}
-                >
-                  <div style={styles.statIcon}>
-                    <Icon icon={s.icon} style={{ color: 'var(--accent-primary)', fontSize: '1.25rem' }} />
-                  </div>
-                  <p style={styles.statValue}>
-                    <CountUp target={s.value} suffix={s.suffix} inView={inView} />
-                  </p>
-                  <p style={styles.statLabel}>{s.label}</p>
-                </motion.div>
-              </StaggerItem>
+              <StatCard key={s.label} {...s} inView={inView} delay={0.1 + i * 0.1} />
             ))}
-          </StaggerContainer>
+          </div>
         </div>
       </div>
     </section>
   );
 }
-
-const styles = {
-  inner:     { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '5rem', alignItems: 'start' },
-  stats:     { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' },
-  statCard:  { padding: '1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '0.5rem' },
-  statIcon:  { width: '48px', height: '48px', borderRadius: 'var(--r-md)', background: 'rgba(244, 63, 94, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' },
-  statValue: { fontSize: '1.8rem', fontWeight: 900, color: 'var(--text-primary)', lineHeight: 1, fontFamily: 'var(--font-mono)' },
-  statLabel: { fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' },
-};

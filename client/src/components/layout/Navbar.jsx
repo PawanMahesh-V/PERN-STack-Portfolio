@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
-import { useTheme } from '../../context/ThemeContext';
-
+import { motion, AnimatePresence } from 'framer-motion';
 
 const NAV_LINKS = [
   { href: '#about',        label: 'About' },
@@ -13,128 +12,97 @@ const NAV_LINKS = [
 ];
 
 export default function Navbar({ settings }) {
-  const { theme, toggle } = useTheme();
-  const [scrolled, setScrolled] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled,  setScrolled]  = useState(false);
+  const [menuOpen,  setMenuOpen]  = useState(false);
+  const [scrollPct, setScrollPct] = useState(0);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40);
+    const onScroll = () => {
+      setScrolled(window.scrollY > 40);
+      const total = document.documentElement.scrollHeight - window.innerHeight;
+      setScrollPct(total > 0 ? (window.scrollY / total) * 100 : 0);
+    };
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
+
+  // Lock body scroll when drawer open
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [menuOpen]);
 
   const cvKey = settings?.cv_key;
 
   return (
     <>
-      <nav
-        style={{
-          ...styles.nav,
-          background: scrolled ? 'rgba(8,8,15,0.9)' : 'transparent',
-          backdropFilter: scrolled ? 'blur(20px)' : 'none',
-          borderBottom: scrolled ? '1px solid var(--border-subtle)' : '1px solid transparent',
-          boxShadow: scrolled ? 'var(--shadow-sm)' : 'none',
-        }}
-        aria-label="Main navigation"
-      >
-        <div className="container flex-between" style={{ height: '100%' }}>
+      {/* Scroll progress */}
+      <div className="scroll-progress" style={{ width: `${scrollPct}%` }} />
+
+      <nav className={`navbar${scrolled ? ' scrolled' : ''}`} aria-label="Main navigation">
+        <div className="navbar-inner">
           {/* Logo */}
-          <Link to="/" style={styles.logo} aria-label="Home">
-            <Icon icon="rocket" style={{ color: 'var(--accent-primary)', fontSize: '1.2rem' }} />
-            <span style={styles.logoText} className="gradient-text">Portfolio</span>
+          <Link to="/" className="navbar-logo" aria-label="Home">
+            <span className="navbar-logo-icon"><Icon icon="rocket" /></span>
+            <span>Portfolio</span>
           </Link>
 
           {/* Desktop links */}
-          <div style={styles.links} className="hide-mobile">
+          <div className="navbar-links">
             {NAV_LINKS.map(l => (
-              <a key={l.href} href={l.href} style={styles.link}>{l.label}</a>
+              <a key={l.href} href={l.href} className="navbar-link">{l.label}</a>
             ))}
           </div>
 
-          {/* CV + theme + menu */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          {/* Actions */}
+          <div className="navbar-actions">
             {cvKey && (
-              <a
-                href={`/api/assets/${cvKey}`}
-                download
-                className="btn btn-outline btn-sm hide-mobile"
-                id="nav-cv-btn"
-              >
+              <a href={`/api/assets/${cvKey}`} download className="navbar-cv" id="nav-cv-btn">
                 <Icon icon="download" /> CV
               </a>
             )}
             <button
-              onClick={toggle}
-              className="btn btn-ghost btn-icon"
-              aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-              title={`${theme === 'dark' ? 'Light' : 'Dark'} mode`}
-              id="theme-toggle-btn"
-              style={{ fontSize: '1rem' }}
-            >
-              <Icon icon={theme === 'dark' ? 'sun' : 'moon'} />
-            </button>
-            <button
+              className="navbar-menu-btn"
               onClick={() => setMenuOpen(o => !o)}
-              className="btn btn-ghost btn-icon hide-desktop"
               aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-              aria-expanded={menuOpen}
-            >
+              aria-expanded={menuOpen}>
               <Icon icon={menuOpen ? 'xmark' : 'bars'} />
             </button>
           </div>
         </div>
       </nav>
 
+      {/* Mobile overlay */}
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            className="mobile-overlay"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            onClick={() => setMenuOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Mobile drawer */}
-      {menuOpen && (
-        <div style={styles.drawer} className="glass-card hide-desktop" role="dialog" aria-label="Navigation menu">
-          {NAV_LINKS.map(l => (
-            <a key={l.href} href={l.href} style={styles.drawerLink} onClick={() => setMenuOpen(false)}>
-              {l.label}
-            </a>
-          ))}
-          {cvKey && (
-            <a href={`/api/assets/${cvKey}`} download className="btn btn-primary" style={{ marginTop: '0.5rem' }}>
-              <Icon icon="download" /> Download CV
-            </a>
-          )}
-        </div>
-      )}
+      <div className={`mobile-drawer${menuOpen ? ' open' : ''}`} role="dialog" aria-label="Navigation menu">
+        <button
+          className="navbar-menu-btn"
+          style={{ position: 'absolute', top: '1.25rem', right: '1.25rem', display: 'flex' }}
+          onClick={() => setMenuOpen(false)}
+          aria-label="Close menu">
+          <Icon icon="xmark" />
+        </button>
+        {NAV_LINKS.map(l => (
+          <a key={l.href} href={l.href} className="mobile-drawer-link" onClick={() => setMenuOpen(false)}>
+            {l.label}
+          </a>
+        ))}
+        {cvKey && (
+          <a href={`/api/assets/${cvKey}`} download className="btn btn-primary" style={{ marginTop: '1rem' }}>
+            <Icon icon="download" /> Download CV
+          </a>
+        )}
+      </div>
     </>
   );
 }
-
-const styles = {
-  nav: {
-    position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
-    height: '64px',
-    transition: 'background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease',
-  },
-  logo:     { display: 'flex', alignItems: 'center', gap: '0.6rem', textDecoration: 'none' },
-  logoText: { fontWeight: 800, fontSize: '1.1rem', letterSpacing: '-0.01em' },
-  links:    { display: 'flex', gap: '0.25rem', alignItems: 'center' },
-  link: {
-    padding: '0.4rem 0.85rem',
-    color: 'var(--text-secondary)',
-    fontSize: '0.88rem',
-    fontWeight: 500,
-    borderRadius: 'var(--r-sm)',
-    transition: 'color 0.2s, background 0.2s',
-    textDecoration: 'none',
-  },
-  drawer: {
-    position: 'fixed', top: '64px', left: '1rem', right: '1rem', zIndex: 99,
-    padding: '1.25rem',
-    display: 'flex', flexDirection: 'column', gap: '0.25rem',
-    animation: 'slideUp 0.25s ease',
-  },
-  drawerLink: {
-    padding: '0.75rem 1rem',
-    color: 'var(--text-primary)',
-    fontSize: '1rem',
-    fontWeight: 500,
-    borderRadius: 'var(--r-sm)',
-    textDecoration: 'none',
-    transition: 'background 0.2s',
-  },
-};

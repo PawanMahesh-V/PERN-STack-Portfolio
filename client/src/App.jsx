@@ -1,23 +1,24 @@
+import { AuthProvider }  from './context/AuthContext';
+import { ToastProvider } from './context/ToastContext';
+import AppRouter         from './router/AppRouter';
 import './index.css';
-import { AuthProvider }       from './context/AuthContext';
-import { ToastProvider }      from './context/ToastContext';
-import { ThemeProvider }      from './context/ThemeContext';
-import AppRouter              from './router/AppRouter';
-import ScrollToTop            from './components/ui/ScrollToTop';
-import ScrollProgressBar      from './components/ui/ScrollProgressBar';
-import CustomCursor           from './components/ui/CustomCursor';
+function CyberGridBackground() {
+  return (
+    <div className="cyber-grid-bg">
+      <div className="cyber-sun" />
+      <div className="cyber-grid" />
+      <div className="cyber-vignette" />
+    </div>
+  );
+}
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <ToastProvider>
-          <CustomCursor />
-          <ScrollProgressBar />
-          <AppRouter />
-          <ScrollToTop />
-        </ToastProvider>
-      </AuthProvider>
-    </ThemeProvider>
+    <AuthProvider>
+      <ToastProvider>
+        <CyberGridBackground />
+        <AppRouter />
+      </ToastProvider>
+    </AuthProvider>
   );
 }

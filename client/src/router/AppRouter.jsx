@@ -4,7 +4,6 @@ import ProtectedRoute from './ProtectedRoute';
 
 // Public (eager — users always see these)
 import HomePage   from '../pages/public/HomePage';
-import ResumePage from '../pages/public/ResumePage';
 import LoginPage  from '../pages/LoginPage';
 
 // Admin (lazy — only load when admin logs in)
@@ -19,8 +18,8 @@ const SkillsPage         = lazy(() => import('../pages/admin/SkillsPage'));
 const MessagesPage       = lazy(() => import('../pages/admin/MessagesPage'));
 
 const AdminFallback = (
-  <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-base)' }}>
-    <div className="spinner spinner-lg" />
+  <div>
+    <div />
   </div>
 );
 
@@ -51,7 +50,6 @@ function AnimatedRoutes() {
       <Routes location={location} key={location.pathname}>
         {/* ── Public ── */}
         <Route path="/"        element={<HomePage />} />
-        <Route path="/resume"  element={<ResumePage />} />
         <Route path="/phantom" element={<LoginPage />} />
 
         {/* ── Admin — lazy loaded, protected ── */}

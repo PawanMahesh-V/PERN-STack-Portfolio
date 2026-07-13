@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { getCertificates } from '../../../api/certificatesApi';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 import { motion } from 'framer-motion';
-import { StaggerContainer, StaggerItem } from '../../../components/ui/FadeIn';
 
 export default function CertificatesSection({ section }) {
   const [items,   setItems]   = useState([]);
@@ -15,97 +14,102 @@ export default function CertificatesSection({ section }) {
       .finally(() => setLoading(false));
   }, [section.id]);
 
+  const containerV = {
+    hidden:  {},
+    visible: { transition: { staggerChildren: 0.1 } },
+  };
+  const cardV = {
+    hidden:  { opacity: 0, y: 24 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.45 } },
+  };
+
   return (
-    <section id="certificates" className="section-pad" aria-labelledby="cert-title">
+    <section id="certificates" className="section" aria-labelledby="cert-title">
       <div className="container">
-        <StaggerContainer delayChildren={0.1}>
-          <StaggerItem>
-            <span className="section-label">
-              <Icon icon="certificate" style={{ marginRight: '0.4rem' }} />Credentials
-            </span>
-          </StaggerItem>
-          <StaggerItem>
-            <h2 id="cert-title" className="section-title">{section.title}</h2>
-          </StaggerItem>
-          <StaggerItem>
-            <div className="section-divider" />
-          </StaggerItem>
+        <div className="section-header">
+          <span className="section-label"><Icon icon="certificate" /> Credentials</span>
+          <h2 id="cert-title">{section.title}</h2>
+          <div className="section-divider" />
+        </div>
 
-          {loading ? <div className="spinner" /> : (
-            <StaggerContainer delayChildren={0.3} className="grid-auto">
-              {items.map((cert) => (
-                <StaggerItem key={cert.id}>
-                  <div
-                    className="flip-card interactive"
-                    id={`cert-${cert.id}`}
-                    title="Hover to see details"
-                  >
-                    <div className="flip-card-inner">
-                      {/* Front */}
-                      <div className="flip-front">
+        {loading ? (
+          <div className="loader" />
+        ) : (
+          <motion.div
+            className="certs-grid"
+            variants={containerV}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-5%' }}>
+            {items.map(cert => (
+              <motion.div key={cert.id} variants={cardV}>
+                <div className="flip-card" id={`cert-${cert.id}`} title="Hover to see details">
+                  <div className="flip-card-inner">
+                    {/* Front */}
+                    <div className="flip-card-front">
+                      <div className="flip-card-front-img">
                         {cert.image_url ? (
-                          <div style={styles.imgWrap}>
-                            <img src={cert.image_url} alt={cert.title} style={styles.img} loading="lazy" />
-                          </div>
+                          <img src={cert.image_url} alt={cert.title} loading="lazy" />
                         ) : (
-                          <div style={styles.imgPlaceholder}>
-                            <Icon icon="certificate" style={{ fontSize: '3rem', color: 'var(--accent-primary)', opacity: 0.4 }} />
+                          <div className="flip-card-front-placeholder">
+                            <Icon icon="certificate" />
                           </div>
                         )}
-                        <div style={styles.frontBody}>
-                          <h3 style={styles.title}>{cert.title}</h3>
-                          {cert.issuer && (
-                            <p style={styles.issuer}>
-                              <Icon icon="building" style={{ marginRight: '0.3rem', fontSize: '0.8rem' }} />{cert.issuer}
-                            </p>
-                          )}
-                        </div>
-                        <div style={styles.hintBadge}>Hover to flip</div>
                       </div>
-
-                      {/* Back */}
-                      <div className="flip-back">
-                        <div style={{ fontSize: '2.5rem', marginBottom: '0.25rem' }}>
-                          <Icon icon="certificate" style={{ color: 'var(--accent-primary)' }} />
-                        </div>
-                        <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.3 }}>{cert.title}</h3>
+                      <div className="flip-card-front-body">
+                        <h3 className="flip-card-front-title">{cert.title}</h3>
                         {cert.issuer && (
-                          <p style={{ fontSize: '0.85rem', color: 'var(--accent-primary)', fontWeight: 500 }}>{cert.issuer}</p>
-                        )}
-                        {cert.issue_date && (
-                          <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-                            <Icon icon="calendar" prefix="far" style={{ marginRight: '0.35rem' }} />
-                            {new Date(cert.issue_date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                          <p className="flip-card-front-issuer">
+                            <Icon icon="building" /> {cert.issuer}
                           </p>
                         )}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: 'var(--accent-secondary)', fontSize: '0.75rem', fontWeight: 700 }}>
-                          <Icon icon="circle-check" /> Verified Credential
-                        </div>
-                        {cert.cert_url && (
-                          <a href={cert.cert_url} target="_blank" rel="noopener noreferrer" className="btn btn-primary btn-sm interactive" style={{ marginTop: '0.5rem' }} onClick={e => e.stopPropagation()}>
-                            <Icon icon="arrow-up-right-from-square" style={{ marginRight: '0.35rem' }} />View Credential
-                          </a>
-                        )}
+                      </div>
+                      <div className="flip-card-front-hint">
+                        <Icon icon="rotate" /> Hover to flip
                       </div>
                     </div>
+
+                    {/* Back */}
+                    <div className="flip-card-back">
+                      <div className="flip-card-back-icon">
+                        <Icon icon="certificate" />
+                      </div>
+                      <h3 className="flip-card-back-title">{cert.title}</h3>
+                      {cert.issuer && (
+                        <p className="flip-card-back-issuer">{cert.issuer}</p>
+                      )}
+                      {cert.issue_date && (
+                        <p className="flip-card-back-date">
+                          <Icon icon={['far','calendar']} />
+                          {new Date(cert.issue_date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                        </p>
+                      )}
+                      <div className="flip-card-back-verified">
+                        <Icon icon="circle-check" /> Verified Credential
+                      </div>
+                      {cert.cert_url && (
+                        <a
+                          href={cert.cert_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flip-card-back-link"
+                          onClick={e => e.stopPropagation()}>
+                          <Icon icon="arrow-up-right-from-square" /> View Credential
+                        </a>
+                      )}
+                    </div>
                   </div>
-                </StaggerItem>
-              ))}
-              {items.length === 0 && <StaggerItem><p style={{ color: 'var(--text-muted)' }}>No certificates yet.</p></StaggerItem>}
-            </StaggerContainer>
-          )}
-        </StaggerContainer>
+                </div>
+              </motion.div>
+            ))}
+            {items.length === 0 && (
+              <div className="certs-empty">
+                <p style={{ color: 'var(--text-muted)' }}>No certificates yet.</p>
+              </div>
+            )}
+          </motion.div>
+        )}
       </div>
     </section>
   );
 }
-
-const styles = {
-  imgWrap:      { height: '160px', overflow: 'hidden', background: 'var(--bg-surface)' },
-  img:          { width: '100%', height: '100%', objectFit: 'contain', padding: '0.75rem' },
-  imgPlaceholder:{ height: '160px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-surface)' },
-  frontBody:    { padding: '1rem 1.25rem' },
-  title:        { fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.3, marginBottom: '0.3rem' },
-  issuer:       { fontSize: '0.8rem', color: 'var(--accent-primary)', fontWeight: 500, display: 'flex', alignItems: 'center' },
-  hintBadge:    { position: 'absolute', bottom: '0.75rem', right: '0.75rem', fontSize: '0.62rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', opacity: 0.6 },
-};

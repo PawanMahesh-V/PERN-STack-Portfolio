@@ -4,6 +4,7 @@ import { getAllSections } from '../../api/sectionsApi';
 import { uploadAsset } from '../../api/assetsApi';
 import { useToast } from '../../context/ToastContext';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const EMPTY = { section_id: '', title: '', issuer: '', image_url: '', issue_date: '', cert_url: '' };
 
@@ -38,8 +39,8 @@ export default function CertificatesPage() {
     if (!file) return;
     setUploading(true);
     try {
-      const { url } = await uploadAsset(file);
-      setForm(p => ({ ...p, image_url: url }));
+      const { data } = await uploadAsset(file);
+      setForm(p => ({ ...p, image_url: `/api/assets/${data.asset.key}` }));
       toast('Image uploaded.', 'success');
     } catch (err) {
       toast(err.response?.data?.error || 'Upload failed.', 'error');
@@ -50,8 +51,7 @@ export default function CertificatesPage() {
   };
 
   const handleSave = async (e) => {
-    e.preventDefault();
-    setSaving(true);
+    e.preventDefault(); setSaving(true);
     try {
       if (modal.mode === 'create') { await createCertificate(form); toast('Certificate added!', 'success'); }
       else { await updateCertificate(modal.data.id, form); toast('Certificate updated!', 'success'); }
@@ -67,106 +67,146 @@ export default function CertificatesPage() {
   };
 
   return (
-    <div style={{ animation: 'fadeInUp 0.4s ease' }}>
-      <div className="flex-between" style={{ marginBottom: '2rem' }}>
-        <div>
-          <h1 style={styles.pageTitle}>Certificates <span className="gradient-text">Manager</span></h1>
-          <p style={styles.pageSub}>Showcase your credentials and achievements.</p>
+    <div className="ap-page">
+      <div className="ap-header">
+        <div className="ap-header-text">
+          <h1 className="ap-title">Certificates <span>Manager</span></h1>
+          <p className="ap-sub">Showcase your credentials and achievements.</p>
         </div>
-        <button id="create-cert-btn" onClick={openCreate} className="btn btn-primary" disabled={sections.length === 0}>+ Add Certificate</button>
+        <button className="btn-admin-primary" id="create-cert-btn" onClick={openCreate} disabled={sections.length === 0}>
+          <Icon icon="plus" /> Add Certificate
+        </button>
       </div>
 
       {sections.length === 0 && !loading && (
-        <div className="glass-card" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+        <div className="ap-alert">
+          <Icon icon="triangle-exclamation" />
           Create a section of type <code>certificates</code> first.
         </div>
       )}
 
-      {loading ? <div className="spinner" /> : (
-        <div className="glass-card" style={{ overflow: 'hidden' }}>
-          {certs.length === 0 ? (
-            <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>No certificates yet.</div>
-          ) : certs.map((c, i) => (
-            <div key={c.id} style={{ ...styles.row, borderTop: i > 0 ? '1px solid var(--border-subtle)' : 'none' }}>
-              {c.image_url && <img src={c.image_url} alt={c.title} style={styles.thumb} />}
-              <div style={{ flex: 1 }}>
-                <p style={{ fontWeight: 600 }}>{c.title}</p>
-                <p style={styles.meta}>{c.issuer} {c.issue_date && `· ${new Date(c.issue_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`}</p>
+      <div className="ap-card">
+        {loading ? <div className="loader" style={{ margin: '3rem auto' }} /> : (
+          <div className="ap-table-wrap">
+            {certs.length === 0 ? (
+              <div className="ap-empty">
+                <Icon icon="certificate" className="ap-empty-icon" />
+                <p>No certificates yet. Click "Add Certificate" to get started.</p>
               </div>
-              <button onClick={() => openEdit(c)} className="btn btn-ghost btn-sm">Edit</button>
-              <button onClick={() => handleDelete(c.id)} className="btn btn-danger btn-sm btn-icon" aria-label="Delete">✕</button>
-            </div>
-          ))}
-        </div>
-      )}
+            ) : (
+              <table className="ap-table">
+                <thead>
+                  <tr>
+                    <th>Certificate</th>
+                    <th>Issuer & Date</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {certs.map(c => (
+                    <tr key={c.id}>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                          {c.image_url ? (
+                            <img src={c.image_url} alt={c.title} className="td-thumb" />
+                          ) : (
+                            <div className="td-thumb" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
+                              <Icon icon="certificate" />
+                            </div>
+                          )}
+                          <div className="td-title">{c.title}</div>
+                        </div>
+                      </td>
+                      <td>
+                        <div className="td-meta" style={{ marginTop: 0 }}>
+                          {c.issuer}
+                          <br/>
+                          {c.issue_date && <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem' }}>
+                            {new Date(c.issue_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                          </span>}
+                        </div>
+                      </td>
+                      <td>
+                        <div className="td-actions">
+                          {c.cert_url && (
+                            <a href={c.cert_url} target="_blank" rel="noopener noreferrer" className="btn-admin-icon" style={{ color: 'var(--accent-primary)' }} title="View Link">
+                              <Icon icon="arrow-up-right-from-square" />
+                            </a>
+                          )}
+                          <button className="btn-admin-icon btn-admin-icon-edit" onClick={() => openEdit(c)} title="Edit"><Icon icon="pencil" /></button>
+                          <button className="btn-admin-icon btn-admin-icon-del" onClick={() => handleDelete(c.id)} title="Delete"><Icon icon="trash" /></button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        )}
+      </div>
 
-      {modal && (
-        <div className="modal-overlay" onClick={() => setModal(null)}>
-          <div className="modal" onClick={e => e.stopPropagation()} role="dialog">
-            <div className="modal-header">
-              <h2 className="modal-title">{modal.mode === 'create' ? 'Add Certificate' : 'Edit Certificate'}</h2>
-              <button onClick={() => setModal(null)} className="btn btn-ghost btn-icon">✕</button>
-            </div>
-            <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div className="form-group">
-                <label className="form-label" htmlFor="cert-section">Section</label>
-                <select id="cert-section" className="form-select" value={form.section_id} onChange={e => setForm(p => ({ ...p, section_id: e.target.value }))}>
-                  {sections.map(s => <option key={s.id} value={s.id}>{s.title}</option>)}
-                </select>
+      <AnimatePresence>
+        {modal && (
+          <motion.div className="modal-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setModal(null)}>
+            <motion.div className="modal-box" initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }} onClick={e => e.stopPropagation()} role="dialog">
+              <div className="modal-header">
+                <div className="modal-title"><Icon icon={modal.mode === 'create' ? 'plus' : 'pencil'} />{modal.mode === 'create' ? 'Add Certificate' : 'Edit Certificate'}</div>
+                <button className="modal-close" onClick={() => setModal(null)}><Icon icon="xmark" /></button>
               </div>
-              <div className="form-group">
-                <label className="form-label" htmlFor="cert-title">Title *</label>
-                <input id="cert-title" type="text" className="form-input" required value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} />
-              </div>
-              <div className="form-group">
-                <label className="form-label" htmlFor="cert-issuer">Issuer / Organisation</label>
-                <input id="cert-issuer" type="text" className="form-input" value={form.issuer || ''} onChange={e => setForm(p => ({ ...p, issuer: e.target.value }))} />
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div className="form-group">
-                  <label className="form-label" htmlFor="cert-date">Issue Date</label>
-                  <input id="cert-date" type="date" className="form-input" value={form.issue_date || ''} onChange={e => setForm(p => ({ ...p, issue_date: e.target.value }))} />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Certificate Image / Badge (Optional)</label>
-                  <input type="file" accept="image/*" style={{ display: 'none' }} ref={fileInputRef} onChange={handleImageUpload} />
-                  <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-                    {form.image_url ? (
-                      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', background: 'var(--bg-surface)', padding: '0.25rem', borderRadius: 'var(--r-sm)', border: '1px solid var(--border-subtle)' }}>
-                        <img src={form.image_url} alt="Preview" style={{ width: '36px', height: '36px', objectFit: 'contain', borderRadius: '2px' }} />
-                        <button type="button" onClick={() => setForm(p => ({ ...p, image_url: '' }))} className="btn btn-ghost btn-icon btn-sm" aria-label="Remove image">
-                          <Icon icon="trash" style={{ color: 'var(--text-danger)' }} />
+              <form onSubmit={handleSave}>
+                <div className="modal-body">
+                  <div className="form-group">
+                    <label className="form-label" htmlFor="cert-section">Section</label>
+                    <select id="cert-section" className="form-input" value={form.section_id} onChange={e => setForm(p => ({ ...p, section_id: e.target.value }))}>
+                      {sections.map(s => <option key={s.id} value={s.id}>{s.title}</option>)}
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label" htmlFor="cert-title">Title *</label>
+                    <input id="cert-title" className="form-input" type="text" required value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} placeholder="e.g. AWS Certified Developer" />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label" htmlFor="cert-issuer">Issuer</label>
+                    <input id="cert-issuer" className="form-input" type="text" value={form.issuer || ''} onChange={e => setForm(p => ({ ...p, issuer: e.target.value }))} placeholder="e.g. Amazon Web Services" />
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                    <div className="form-group">
+                      <label className="form-label" htmlFor="cert-date">Issue Date</label>
+                      <input id="cert-date" className="form-input" type="date" value={form.issue_date || ''} onChange={e => setForm(p => ({ ...p, issue_date: e.target.value }))} />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Image / Badge</label>
+                      <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageUpload} style={{ display: 'none' }} />
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        {form.image_url && <img src={form.image_url} alt="Preview" className="td-thumb" style={{ width: '40px', height: '40px' }} />}
+                        <button type="button" className="btn-admin-secondary" style={{ flex: 1, padding: '0.4rem' }} onClick={() => fileInputRef.current?.click()} disabled={uploading}>
+                          {uploading ? <Icon icon="spinner" spin /> : <Icon icon="upload" />}
                         </button>
+                        {form.image_url && (
+                          <button type="button" className="btn-admin-icon btn-admin-icon-del" onClick={() => setForm(p => ({ ...p, image_url: '' }))}>
+                            <Icon icon="xmark" />
+                          </button>
+                        )}
                       </div>
-                    ) : (
-                      <button type="button" onClick={() => fileInputRef.current?.click()} className="btn btn-outline" disabled={uploading}>
-                        {uploading ? <span className="spinner" style={{ width: '1rem', height: '1rem', borderWidth: '2px' }} /> : <Icon icon="upload" style={{ marginRight: '0.5rem' }} />}
-                        {uploading ? 'Uploading...' : 'Upload Image'}
-                      </button>
-                    )}
+                    </div>
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label" htmlFor="cert-url">Credential Link</label>
+                    <input id="cert-url" className="form-input" type="url" value={form.cert_url || ''} onChange={e => setForm(p => ({ ...p, cert_url: e.target.value }))} placeholder="https://…" />
                   </div>
                 </div>
-              </div>
-              <div className="form-group">
-                <label className="form-label" htmlFor="cert-url">Credential Link</label>
-                <input id="cert-url" type="url" className="form-input" value={form.cert_url || ''} onChange={e => setForm(p => ({ ...p, cert_url: e.target.value }))} />
-              </div>
-              <div className="modal-footer">
-                <button type="button" onClick={() => setModal(null)} className="btn btn-ghost">Cancel</button>
-                <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? '…' : modal.mode === 'create' ? 'Add' : 'Save'}</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+                <div className="modal-footer">
+                  <button type="button" className="btn-admin-secondary" onClick={() => setModal(null)}>Cancel</button>
+                  <button type="submit" className="btn-admin-primary" disabled={saving}>
+                    {saving ? <><Icon icon="spinner" spin /> Saving…</> : modal.mode === 'create' ? 'Add Certificate' : 'Save Changes'}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
-
-const styles = {
-  pageTitle: { fontSize: '1.6rem', fontWeight: 800, marginBottom: '0.35rem' },
-  pageSub:   { color: 'var(--text-muted)', fontSize: '0.9rem' },
-  row:       { display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem 1.25rem' },
-  thumb:     { width: '48px', height: '48px', objectFit: 'contain', borderRadius: 'var(--r-sm)', background: 'var(--bg-surface)', padding: '4px', flexShrink: 0 },
-  meta:      { fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.15rem' },
-};

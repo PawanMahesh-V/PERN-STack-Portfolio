@@ -4,8 +4,8 @@ import { useAuth } from '../context/AuthContext';
 // Shows a full-screen spinner while JWT is being verified on mount
 function AuthSpinner() {
   return (
-    <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-base)' }}>
-      <div className="spinner spinner-lg" />
+    <div>
+      <div />
     </div>
   );
 }
