@@ -12,7 +12,7 @@ services:
       - key: PORT
         value: 5000
       - key: FRONTEND_URL
-        value: "https://your-frontend-project.vercel.app" # You still need to update this after deploying to Vercel!
+        value: "https://pern-stack-portfolio.vercel.app"
       - key: NODE_ENV
         value: production
       - key: JWT_SECRET
