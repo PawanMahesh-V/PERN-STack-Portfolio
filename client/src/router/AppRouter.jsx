@@ -29,7 +29,8 @@ function RouteTracker() {
   useEffect(() => {
     // Only track public visits, ignore admin dashboard routes
     if (!location.pathname.startsWith('/phantom')) {
-      fetch('/api/analytics/visit', {
+      const baseUrl = import.meta.env.VITE_API_URL || '/api';
+      fetch(`${baseUrl}/analytics/visit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ path: location.pathname }),

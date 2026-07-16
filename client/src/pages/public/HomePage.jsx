@@ -15,12 +15,14 @@ export default function HomePage() {
   useEffect(() => {
     Promise.all([getSettings(), getSections()])
       .then(([{ data: s }, { data: sec }]) => {
-        setSettings(s.settings);
-        setSections(sec.sections);
+        const settingsData = s?.settings || {};
+        const sectionsData = sec?.sections || [];
+        setSettings(settingsData);
+        setSections(sectionsData);
         
         // Update SEO Meta Tags dynamically
-        if (s.settings.seo_title) {
-          document.title = s.settings.seo_title;
+        if (settingsData.seo_title) {
+          document.title = settingsData.seo_title;
         }
         if (s.settings.seo_description) {
           let metaDesc = document.querySelector('meta[name="description"]');
