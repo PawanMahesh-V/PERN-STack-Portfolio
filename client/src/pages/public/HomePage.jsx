@@ -24,14 +24,14 @@ export default function HomePage() {
         if (settingsData.seo_title) {
           document.title = settingsData.seo_title;
         }
-        if (s.settings.seo_description) {
+        if (settingsData.seo_description) {
           let metaDesc = document.querySelector('meta[name="description"]');
           if (!metaDesc) {
             metaDesc = document.createElement('meta');
             metaDesc.name = "description";
             document.head.appendChild(metaDesc);
           }
-          metaDesc.content = s.settings.seo_description;
+          metaDesc.content = settingsData.seo_description;
         }
       })
       .catch(console.error)
