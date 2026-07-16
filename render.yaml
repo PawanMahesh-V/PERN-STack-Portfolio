@@ -12,7 +12,7 @@ services:
       - key: PORT
         value: 5000
       - key: FRONTEND_URL
-        value: "https://pern-stack-portfolio.vercel.app"
+        value: "https://pawanmahesh-portfolio.vercel.app"
       - key: NODE_ENV
         value: production
       - key: JWT_SECRET
