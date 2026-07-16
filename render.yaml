@@ -1,0 +1,41 @@
+services:
+  - type: web
+    name: portfolio-backend
+    env: node
+    plan: free
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm run db:init && npm run db:seed && npm start
+    envVars:
+      - key: DATABASE_URL
+        value: "postgresql://neondb_owner:npg_solm8BJtYb3C@ep-ancient-bar-aokyoisi.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require"
+      - key: PORT
+        value: 5000
+      - key: FRONTEND_URL
+        value: "https://your-frontend-project.vercel.app" # You still need to update this after deploying to Vercel!
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        value: "f3a8b2e1d7c4f9a6b3e0d5c8f1a4b7e2d9c6f3a0b5e8d1c4f7a2b9e6d3c0f5a8b1e4d7c2f9a6b3"
+      - key: JWT_EXPIRES_IN
+        value: "7d"
+      - key: ADMIN_EMAIL
+        value: "bcsbs2212263@szabist.pk"
+      - key: ADMIN_PASSWORD
+        value: "pawan123!"
+      - key: SMTP_HOST
+        value: "smtp.gmail.com"
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_USER
+        value: "pawanmahesh04@gmail.com"
+      - key: SMTP_PASS
+        value: "apezcjxdkwqvirzf"
+      - key: CONTACT_RECEIVER
+        value: "pawanmahesh04@gmail.com"
+      - key: MAX_IMAGE_SIZE_MB
+        value: "5"
+      - key: MAX_PDF_SIZE_MB
+        value: "10"
+      - key: CLIENT_URL
+        value: "http://localhost:3000"
