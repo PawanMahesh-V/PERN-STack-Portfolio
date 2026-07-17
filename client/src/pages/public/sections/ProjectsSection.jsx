@@ -1,5 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
-import { getProjects } from '../../../api/projectsApi';
+import { useState, useCallback } from 'react';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 
@@ -70,17 +69,9 @@ function ProjectCard({ proj, setActiveTag }) {
   );
 }
 
-export default function ProjectsSection({ section }) {
-  const [items,     setItems]     = useState([]);
-  const [loading,   setLoading]   = useState(true);
+export default function ProjectsSection({ section, resumeData }) {
+  const items = resumeData?.projects || [];
   const [activeTag, setActiveTag] = useState('All');
-
-  useEffect(() => {
-    getProjects(section.id)
-      .then(({ data }) => setItems(data.projects))
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, [section.id]);
 
   const allTags  = ['All', ...new Set(items.flatMap(p => p.tech_stack || []))];
   const filtered = activeTag === 'All' ? items : items.filter(p => (p.tech_stack || []).includes(activeTag));
@@ -95,7 +86,7 @@ export default function ProjectsSection({ section }) {
         </div>
 
         {/* Filter chips */}
-        {!loading && allTags.length > 1 && (
+        {allTags.length > 1 && (
           <div className="projects-filters">
             {allTags.map(tag => (
               <button
@@ -108,23 +99,19 @@ export default function ProjectsSection({ section }) {
           </div>
         )}
 
-        {loading ? (
-          <div className="loader" />
-        ) : (
-          <motion.div className="projects-grid" layout>
-            <AnimatePresence mode="popLayout">
-              {filtered.map(proj => (
-                <ProjectCard key={proj.id} proj={proj} setActiveTag={setActiveTag} />
-              ))}
-            </AnimatePresence>
-            {filtered.length === 0 && (
-              <div className="projects-empty">
-                <p>No projects match "{activeTag}". </p>
-                <button onClick={() => setActiveTag('All')}>Clear filter</button>
-              </div>
-            )}
-          </motion.div>
-        )}
+        <motion.div className="projects-grid" layout>
+          <AnimatePresence mode="popLayout">
+            {filtered.map(proj => (
+              <ProjectCard key={proj.id} proj={proj} setActiveTag={setActiveTag} />
+            ))}
+          </AnimatePresence>
+          {filtered.length === 0 && (
+            <div className="projects-empty">
+              <p>No projects match "{activeTag}". </p>
+              <button onClick={() => setActiveTag('All')}>Clear filter</button>
+            </div>
+          )}
+        </motion.div>
       </div>
     </section>
   );

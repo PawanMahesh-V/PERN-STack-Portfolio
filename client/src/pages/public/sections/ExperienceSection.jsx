@@ -1,18 +1,8 @@
-import { useEffect, useState } from 'react';
-import { getExperiences } from '../../../api/experiencesApi';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 import { motion } from 'framer-motion';
 
-export default function ExperienceSection({ section }) {
-  const [items,   setItems]   = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    getExperiences(section.id)
-      .then(({ data }) => setItems(data.experiences))
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, [section.id]);
+export default function ExperienceSection({ section, resumeData }) {
+  const items = resumeData?.experiences || [];
 
   const containerV = {
     hidden:  {},
@@ -32,68 +22,64 @@ export default function ExperienceSection({ section }) {
           <div className="section-divider" />
         </div>
 
-        {loading ? (
-          <div className="loader" />
-        ) : (
-          <motion.div
-            className="experience-timeline"
-            variants={containerV}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: '-5%' }}>
-            {items.map((exp, i) => (
-              <motion.div key={exp.id} className="timeline-item" variants={itemV}>
-                {/* Connector */}
-                <div className="timeline-connector">
-                  <div className="timeline-dot">
-                    <Icon icon="briefcase" />
-                  </div>
-                  {i < items.length - 1 && <div className="timeline-line" />}
+        <motion.div
+          className="experience-timeline"
+          variants={containerV}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: '-5%' }}>
+          {items.map((exp, i) => (
+            <motion.div key={exp.id} className="timeline-item" variants={itemV}>
+              {/* Connector */}
+              <div className="timeline-connector">
+                <div className="timeline-dot">
+                  <Icon icon="briefcase" />
                 </div>
+                {i < items.length - 1 && <div className="timeline-line" />}
+              </div>
 
-                {/* Card */}
-                <div className="timeline-card">
-                  <div className="timeline-head">
-                    <div>
-                      <div className="timeline-role">{exp.role}</div>
-                      <div className="timeline-company">
-                        {exp.logo_url && <img src={exp.logo_url} alt={exp.company} />}
-                        <Icon icon="building" />
-                        {exp.company}
-                      </div>
+              {/* Card */}
+              <div className="timeline-card">
+                <div className="timeline-head">
+                  <div>
+                    <div className="timeline-role">{exp.role}</div>
+                    <div className="timeline-company">
+                      {exp.logo_url && <img src={exp.logo_url} alt={exp.company} />}
+                      <Icon icon="building" />
+                      {exp.company}
                     </div>
-                    <span className="timeline-dates">
-                      <Icon icon={['far','calendar']} />
-                      {exp.start_date
-                        ? new Date(exp.start_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
-                        : '—'}
-                      {' – '}
-                      {exp.end_date
-                        ? new Date(exp.end_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
-                        : <span className="timeline-present">Present</span>}
-                    </span>
                   </div>
-
-                  {exp.bullets?.length > 0 && (
-                    <ul className="timeline-bullets">
-                      {exp.bullets.map((b, bi) => (
-                        <li key={bi} className="timeline-bullet">
-                          <Icon icon="chevron-right" className="timeline-bullet-icon" />
-                          {b}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
+                  <span className="timeline-dates">
+                    <Icon icon={['far','calendar']} />
+                    {exp.start_date
+                      ? new Date(exp.start_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+                      : '—'}
+                    {' – '}
+                    {exp.end_date
+                      ? new Date(exp.end_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+                      : <span className="timeline-present">Present</span>}
+                  </span>
                 </div>
-              </motion.div>
-            ))}
-            {items.length === 0 && (
-              <p style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
-                No experience entries yet.
-              </p>
-            )}
-          </motion.div>
-        )}
+
+                {exp.bullets?.length > 0 && (
+                  <ul className="timeline-bullets">
+                    {exp.bullets.map((b, bi) => (
+                      <li key={bi} className="timeline-bullet">
+                        <Icon icon="chevron-right" className="timeline-bullet-icon" />
+                        {b}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </motion.div>
+          ))}
+          {items.length === 0 && (
+            <p style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
+              No experience entries yet.
+            </p>
+          )}
+        </motion.div>
       </div>
     </section>
   );

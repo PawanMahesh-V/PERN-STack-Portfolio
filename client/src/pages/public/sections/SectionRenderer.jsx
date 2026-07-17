@@ -14,9 +14,9 @@ const MAP = {
   skills:       SkillsSection,
 };
 
-export default function SectionRenderer({ section, settings }) {
+export default function SectionRenderer({ section, settings, resumeData }) {
   if (!section.is_visible) return null;
   const Component = MAP[section.type];
   if (!Component) return null;
-  return <Component section={section} settings={settings} />;
+  return <Component section={section} settings={settings} resumeData={resumeData} />;
 }
